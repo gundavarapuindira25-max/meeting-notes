@@ -43,7 +43,14 @@ export default function MeetingDetail({ meeting, onDelete }) {
         ) : (
           <ul className="decision-list">
             {summary.key_decisions.map((d, i) => (
-              <li key={i}>{d}</li>
+              <li key={i}>
+                {d.text}
+                {!d.verified && (
+                  <span className="unverified-badge" title="Couldn't confirm this is directly supported by the transcript">
+                    unverified
+                  </span>
+                )}
+              </li>
             ))}
           </ul>
         )}
@@ -64,9 +71,21 @@ export default function MeetingDetail({ meeting, onDelete }) {
               <li key={i} className="action-item">
                 <span className="action-checkbox" aria-hidden="true" />
                 <div className="action-item-body">
-                  <span className="action-task">{item.task}</span>
+                  <span className="action-task">
+                    {item.task}
+                    {!item.verified && (
+                      <span className="unverified-badge" title="Couldn't confirm this task is directly supported by the transcript">
+                        unverified
+                      </span>
+                    )}
+                  </span>
                   <div className="action-meta">
-                    {item.owner && <span className="action-owner">{item.owner}</span>}
+                    {item.owner && (
+                      <span className={`action-owner ${item.owner_verified ? "" : "action-owner--unverified"}`}>
+                        {item.owner}
+                        {!item.owner_verified && <span title="Name not found in transcript"> ⚠</span>}
+                      </span>
+                    )}
                     {item.due_date && <span className="action-due">{item.due_date}</span>}
                   </div>
                 </div>

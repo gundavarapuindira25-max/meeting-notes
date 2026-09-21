@@ -363,7 +363,22 @@
 }
 
 .action-owner { background: var(--accent-soft); color: var(--accent); }
+.action-owner--unverified { background: #fef3c7; color: #b45309; }
 .action-due { background: var(--green-soft); color: var(--green); }
+
+.unverified-badge {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fef3c7;
+  color: #b45309;
+  border-radius: 4px;
+  padding: 1px 6px;
+  vertical-align: middle;
+}
 
 .transcript-toggle {
   background: none;

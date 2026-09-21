@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import storage
 from summarizer import summarize_transcript
 from transcript import extract_text
+from verification import ground_owners, verify_claims
 
 load_dotenv()
 
@@ -55,6 +56,8 @@ async def create_meeting(
 
     try:
         summary = await summarize_transcript(ollama_client, transcript)
+        summary = ground_owners(summary, transcript)
+        summary = await verify_claims(ollama_client, transcript, summary)
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e))
     except Exception as e:
