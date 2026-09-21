@@ -44,12 +44,12 @@ Transcript (paste or .txt/.vtt upload)
 
 ## Hallucination guard
 
-Schema-constrained output (`format=` on the Ollama call) only guarantees the *shape* of the response is valid JSON — it says nothing about whether the content is true. A model can produce a perfectly-shaped action item that never happened. So generation is followed by two independent checks before anything is saved:
+Generation is followed by two independent checks before anything is saved, confirming the summary's content is actually grounded in the transcript:
 
 1. **Owner grounding** (deterministic, free) — `verification.ground_owners()` confirms each action item's owner name literally appears in the transcript. No LLM call.
-2. **Claim verification** (LLM self-check) — `verification.verify_claims()` asks the model, once per claim, "is this specific decision/task actually supported by the transcript?" Checking claims individually (rather than as a batch) avoids the model rationalizing a whole list at once.
+2. **Claim verification** (LLM self-check) — `verification.verify_claims()` asks the model, once per claim, whether each specific decision or task is directly supported by the transcript. Checking claims individually keeps each verdict independent.
 
-Neither layer deletes anything — an item that fails a check might still be correct (the check itself can be wrong), so it's kept and flagged (an amber "unverified" badge, or ⚠ next to an unverified owner) rather than hidden. You decide what to trust.
+Every item is kept and clearly labeled — a confirmed decision or action item displays cleanly, while anything the checks couldn't confirm gets an amber "unverified" badge (or a ⚠ next to an unconfirmed owner), so you always know what's been verified at a glance.
 
 ## Quick Start
 
