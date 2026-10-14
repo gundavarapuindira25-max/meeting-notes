@@ -17,7 +17,7 @@ Paste a transcript or upload a `.txt`/`.vtt` file, and get back a title, a plain
   1. Deterministic check — every action item's owner name is confirmed to literally appear in the transcript, no LLM call needed
   2. LLM self-verification — each key decision and action item is checked, individually, against the transcript by a second model call; unverified claims are kept but flagged (⚠) in the UI rather than silently trusted or dropped
 - Meeting history persisted to SQLite — browse and revisit past meetings
-- **Ask questions across meeting history** — a tool-using agent (not a single RAG call) picks between semantic search and a structured lookup depending on the question, can chain a search into a full-detail lookup for a specific meeting, and cites which meeting every answer came from
+- **Ask questions across meeting history**: a tool-using agent (not a single RAG call) picks between semantic search and a structured lookup depending on the question, can chain a search into a full-detail lookup for a specific meeting, and cites which meeting every answer came from
 - Runs entirely against a local Ollama model — no API key, no per-request cost, works offline
 
 ## Architecture
@@ -58,17 +58,17 @@ Every item is kept and clearly labeled — a confirmed decision or action item d
 
 ## Ask your meetings
 
-`agent.py` runs a manual tool-call loop against Ollama's native tool-calling API, rather than a single RAG call — the model decides which tool a question actually needs:
+`agent.py` runs a manual tool-call loop against Ollama's native tool-calling API, rather than a single RAG call. The model decides which tool a question actually needs:
 
-- **`search_meetings`** — semantic search over transcript chunks (`embeddings.py`), for "what was said about X"
-- **`list_open_action_items`** — a structured query, no embeddings involved, for "what's still unassigned"
-- **`get_meeting_detail`** — the full structured summary for one specific meeting, so a question like "all the decisions from that meeting" can be answered from real structured data instead of a raw transcript excerpt. This is where the agent chains two tool calls together: search first to find the right meeting, then pull its full detail.
+- **`search_meetings`**: semantic search over transcript chunks (`embeddings.py`), for "what was said about X"
+- **`list_open_action_items`**: a structured query, no embeddings involved, for "what's still unassigned"
+- **`get_meeting_detail`**: the full structured summary for one specific meeting, so a question like "all the decisions from that meeting" can be answered from real structured data instead of a raw transcript excerpt. This is where the agent chains two tool calls together: search first to find the right meeting, then pull its full detail.
 
 A few things found and fixed by actually testing this against real questions, not just reading the code:
 
-- **Self-healing tool errors.** A tool call with bad or missing arguments doesn't crash the request — it comes back as a normal `{"error": ...}` tool result, so the model sees exactly what went wrong and can try again instead of the whole turn failing.
-- **A real bug this surfaced**: the model would correctly search and find the right meeting, then sometimes invent a nearby-looking fake id instead of copying the real one into the next call (a real id of `1` became `123456`). Fixed with a grounding check — any requested `meeting_id` is cross-checked against ids actually seen in that conversation's tool results, and corrected when there's exactly one unambiguous match, rather than bounced back as another error round-trip.
-- **A model-size finding, not a code bug**: a 3B model reliably chains `search_meetings` → `get_meeting_detail` when a question is phrased as explicit steps ("search for X, then give me Y"), but is less reliable on a single declarative question needing the same two-hop lookup — it narrates calling a tool instead of actually calling it. Confirmed by testing both phrasings side by side. Swapping the agent specifically to `qwen2.5:7b` closed that gap on every phrasing tried, while the summarizer (single-shot, not multi-step tool selection) stays on the smaller `llama3.2:3b` — right-sizing the model to what each task actually needs rather than using one model everywhere.
+- **Self-healing tool errors.** A tool call with bad or missing arguments doesn't crash the request: it comes back as a normal `{"error": ...}` tool result, so the model sees exactly what went wrong and can try again instead of the whole turn failing.
+- **A real bug this surfaced**: the model would correctly search and find the right meeting, then sometimes invent a nearby-looking fake id instead of copying the real one into the next call (a real id of `1` became `123456`). Fixed with a grounding check: any requested `meeting_id` is cross-checked against ids actually seen in that conversation's tool results, and corrected when there's exactly one unambiguous match, rather than bounced back as another error round-trip.
+- **A model-size finding, not a code bug**: a 3B model reliably chains `search_meetings` → `get_meeting_detail` when a question is phrased as explicit steps ("search for X, then give me Y"), but is less reliable on a single declarative question needing the same two-hop lookup, narrating calling a tool instead of actually calling it. Confirmed by testing both phrasings side by side. Swapping the agent specifically to `qwen2.5:7b` closed that gap on every phrasing tried, while the summarizer (single-shot, not multi-step tool selection) stays on the smaller `llama3.2:3b`, right-sizing the model to what each task actually needs rather than using one model everywhere.
 
 Retrieval also uses a relative score-dropoff filter rather than a fixed similarity threshold, since a fixed cutoff silently excluded correct results whenever the agent phrased its own search query more tersely than the source transcript text. Sources are only shown to the user above a separate, stricter citation threshold than what the model gets as context, so a chunk retrieved just above the noise floor is usable context but never shown as "this is where the answer came from" unless it clears the higher bar.
 
@@ -112,7 +112,7 @@ Open [http://localhost:5173](http://localhost:5173).
 |---|---|---|
 | `OLLAMA_HOST` | `http://localhost:11434` | Where the Ollama server is running |
 | `OLLAMA_MODEL` | `llama3.2:3b` | Model used for summarization |
-| `OLLAMA_AGENT_MODEL` | `qwen2.5:7b` | Model used for the ask-a-question agent — larger than the summarizer's, see "Ask your meetings" |
+| `OLLAMA_AGENT_MODEL` | `qwen2.5:7b` | Model used for the ask-a-question agent, larger than the summarizer's, see "Ask your meetings" |
 | `OLLAMA_EMBED_MODEL` | `nomic-embed-text` | Embedding model for search |
 | `DB_PATH` | `backend/meeting_notes.db` | SQLite database location |
 
@@ -123,4 +123,4 @@ Open [http://localhost:5173](http://localhost:5173).
 | Backend | Python, FastAPI |
 | Frontend | React, Vite |
 | Storage | SQLite |
-| LLM | Ollama (local) — `llama3.2:3b` for summarization, `qwen2.5:7b` for the tool-calling agent, `nomic-embed-text` for search — no API key, no cost, runs offline |
+| LLM | Ollama (local): `llama3.2:3b` for summarization, `qwen2.5:7b` for the tool-calling agent, `nomic-embed-text` for search. No API key, no cost, runs offline |
