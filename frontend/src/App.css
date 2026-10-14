@@ -63,6 +63,22 @@
 
 .logo { font-size: 1.1rem; font-weight: 600; }
 
+.header-nav { display: flex; align-items: center; gap: 10px; }
+
+.nav-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.nav-btn.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
 .new-meeting-btn {
   background: var(--accent);
   color: #fff;
@@ -236,6 +252,45 @@
 }
 
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Ask panel ── */
+.ask-hint { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+
+.ask-form { display: flex; gap: 10px; }
+
+.ask-form .text-input { flex: 1; }
+
+.ask-result {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.ask-answer { font-size: 0.92rem; line-height: 1.6; }
+
+.ask-sources {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ask-sources-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.ask-source-chip {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ask-source-chip:hover { opacity: 0.85; }
 
 /* ── Meeting detail ── */
 .detail-empty {

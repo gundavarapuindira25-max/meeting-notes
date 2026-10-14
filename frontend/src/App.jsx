@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import NewMeeting from "./components/NewMeeting";
 import MeetingList from "./components/MeetingList";
 import MeetingDetail from "./components/MeetingDetail";
+import AskPanel from "./components/AskPanel";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -10,7 +11,7 @@ export default function App() {
   const [meetings, setMeetings] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
-  const [showForm, setShowForm] = useState(true);
+  const [view, setView] = useState("form"); // "form" | "detail" | "ask"
 
   useEffect(() => {
     refreshList();
@@ -37,7 +38,12 @@ export default function App() {
   function handleCreated(meeting) {
     refreshList();
     setSelectedId(meeting.id);
-    setShowForm(false);
+    setView("detail");
+  }
+
+  function handleOpenMeeting(id) {
+    setSelectedId(id);
+    setView("detail");
   }
 
   async function handleDelete(id) {
@@ -45,7 +51,7 @@ export default function App() {
     refreshList();
     if (selectedId === id) {
       setSelectedId(null);
-      setShowForm(true);
+      setView("form");
     }
   }
 
@@ -53,29 +59,32 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <span className="logo">📝 Meeting Notes</span>
-        <button
-          className="new-meeting-btn"
-          onClick={() => {
-            setShowForm(true);
-            setSelectedId(null);
-          }}
-        >
-          + New meeting
-        </button>
+        <nav className="header-nav">
+          <button
+            className={`nav-btn ${view === "ask" ? "active" : ""}`}
+            onClick={() => { setView("ask"); setSelectedId(null); }}
+          >
+            Ask
+          </button>
+          <button
+            className="new-meeting-btn"
+            onClick={() => { setView("form"); setSelectedId(null); }}
+          >
+            + New meeting
+          </button>
+        </nav>
       </header>
 
       <div className="app-body">
         <aside className="sidebar">
           <h3 className="sidebar-title">History</h3>
-          <MeetingList meetings={meetings} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setShowForm(false); }} />
+          <MeetingList meetings={meetings} selectedId={selectedId} onSelect={(id) => { setSelectedId(id); setView("detail"); }} />
         </aside>
 
         <main className="main-content">
-          {showForm ? (
-            <NewMeeting onCreated={handleCreated} />
-          ) : (
-            <MeetingDetail meeting={displayedMeeting} onDelete={handleDelete} />
-          )}
+          {view === "form" && <NewMeeting onCreated={handleCreated} />}
+          {view === "detail" && <MeetingDetail meeting={displayedMeeting} onDelete={handleDelete} />}
+          {view === "ask" && <AskPanel onOpenMeeting={handleOpenMeeting} />}
         </main>
       </div>
     </div>
